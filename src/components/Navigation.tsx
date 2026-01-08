@@ -25,9 +25,9 @@ export function Navigation() {
                     </Nav>
                     <Nav>
                         {auth.isAuthenticated ? (
-                            <Button variant="outline-danger" onClick={() => auth.signoutRedirect()}>Logout</Button>
+                            <Button variant="outline-danger" onClick={() => auth.signoutRedirect()}>Abmelden</Button>
                         ) : (
-                            <Button variant="outline-primary" onClick={() => auth.signinRedirect()}>Login</Button>
+                            <Button variant="outline-primary" onClick={() => auth.signinRedirect()}>Anmelden</Button>
                         )}
                     </Nav>
                 </Navbar.Collapse>
