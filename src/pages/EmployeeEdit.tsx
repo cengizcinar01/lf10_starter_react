@@ -3,7 +3,8 @@ import {Link, useParams} from "react-router-dom";
 
 export function EmployeeEdit() {
     const {id} = useParams(); // Holt die ID aus der URL, falls vorhanden
-    const isNew = !id; // Wenn keine ID da ist, legen wir neu an
+    const parsedId = id !== undefined ? Number(id) : undefined; // ID als Zahl parsen
+    const isNew = parsedId === undefined || Number.isNaN(parsedId); // Wenn keine oder ungültige ID da ist, legen wir neu an
 
     return (
         <Container className="mt-4">
