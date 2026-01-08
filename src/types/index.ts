@@ -5,7 +5,7 @@ export interface Qualification {
 }
 
 // Entspricht EmployeeResponseDTO bei GET-Anfragen
-// UND EmployeeRequestDTO bei POST/PUT-Anfragen
+// & EmployeeRequestDTO bei POST/PUT-Anfragen
 export interface Employee {
     id?: number; // Optional (?): Beim GET ist es da, beim POST/PUT darf es fehlen.
     firstName: string;
