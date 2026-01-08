@@ -9,7 +9,7 @@ export default function RequireAuth({children}: { children: JSX.Element }) {
         if (!auth.isLoading && !auth.isAuthenticated) {
             auth.signinRedirect();
         }
-    }, [auth.isLoading, auth.isAuthenticated, auth]);
+    }, [auth.isLoading, auth.isAuthenticated]);
 
     if (auth.isLoading) {
         return <p>Lädt...</p>;
