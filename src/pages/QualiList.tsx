@@ -1,6 +1,6 @@
 import {Container} from "react-bootstrap";
 
-export function QualiList() {
+export function QualificationList() {
     return (
         <Container className="mt-4">
             <h1>Qualifikations-Verwaltung</h1>
