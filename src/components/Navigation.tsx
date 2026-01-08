@@ -2,13 +2,15 @@ import {Button, Container, Nav, Navbar} from "react-bootstrap";
 import {Link} from "react-router-dom";
 import {useAuth} from "react-oidc-context";
 
+const NAVBAR_BRAND = process.env.REACT_APP_NAVBAR_BRAND || "HiTec Backoffice";
+
 export function Navigation() {
     const auth = useAuth();
 
     return (
         <Navbar bg="light" expand="lg" className="mb-4 shadow-sm">
             <Container>
-                <Navbar.Brand as={Link} to="/">HiTec Backoffice</Navbar.Brand>
+                <Navbar.Brand as={Link} to="/">{NAVBAR_BRAND}</Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav"/>
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="me-auto">
