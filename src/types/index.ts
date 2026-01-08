@@ -1,6 +1,6 @@
 // Entspricht QualificationGetDTO & QualificationPostDTO
 export interface Qualification {
-    id?: number; // Optional (?) weil: Beim Laden ist sie da, beim neu Anlegen noch nicht.
+    id?: number; // Optional (?) weil: Beim Laden ist sie da, beim Neuanlegen noch nicht.
     skill: string;
 }
 
