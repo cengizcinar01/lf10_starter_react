@@ -30,6 +30,8 @@ function App() {
                     }/>
 
                     {/* 2. Mitarbeiter Anlegen (Neu) */}
+                    {/* WICHTIG: Diese Route MUSS vor /employees/:id definiert werden,
+                        da sonst "new" als ID-Parameter interpretiert wird */}
                     <Route path="/employees/new" element={
                         <RequireAuth>
                             <EmployeeEdit/>
