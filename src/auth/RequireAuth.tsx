@@ -22,5 +22,5 @@ export default function RequireAuth({children}: { children: JSX.Element }) {
     if (auth.isAuthenticated) {
         return children;
     }
-    return <div>Weiterleitung zum Login...</div>;
+    return <p>Weiterleitung zum Login...</p>;
 }
