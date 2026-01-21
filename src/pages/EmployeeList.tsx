@@ -7,24 +7,26 @@ import {useEmployeeApi} from "../hooks/useEmployeeApi";
 export function EmployeeList() {
     // State für die Mitarbeiter-Liste
     const [employees, setEmployees] = useState<Employee[]>([]);
-    const {fetchEmployees, loading, error} = useEmployeeApi();
+    const {fetchEmployees, deleteEmployee, loading, error} = useEmployeeApi(); // Destructure deleteEmployee
 
     // Beim Laden der Komponente die Daten holen
+    const loadData = async () => {
+        const data = await fetchEmployees();
+        if (data) {
+            setEmployees(data);
+        }
+    };
+
     useEffect(() => {
-        const loadData = async () => {
-            const data = await fetchEmployees();
-            if (data) {
-                setEmployees(data);
-            }
-        };
         loadData();
     }, []);
 
-    // Platzhalter-Funktion für das Löschen
-    const handleDelete = (id?: number) => {
-        if (confirm("Möchten Sie diesen Mitarbeiter wirklich löschen?")) {
-            console.log("Lösche Mitarbeiter mit ID:", id);
-            // Später: API Aufruf zum Löschen
+    // Funktion für das Löschen
+    const handleDelete = async (id?: number) => {
+        if (id !== undefined && confirm("Möchten Sie diesen Mitarbeiter wirklich löschen?")) {
+            await deleteEmployee(id);
+            // Liste aktualisieren
+            loadData();
         }
     };
 

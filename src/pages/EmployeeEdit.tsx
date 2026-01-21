@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {Alert, Button, Container, Form, Spinner} from "react-bootstrap";
-import {Link, useParams} from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import {useEmployeeApi} from "../hooks/useEmployeeApi";
 import type {Employee} from "../types";
 
@@ -9,7 +9,9 @@ export function EmployeeEdit() {
     const parsedId = id !== undefined ? Number(id) : undefined;
     const isNew = parsedId === undefined || Number.isNaN(parsedId);
 
-    const {getEmployeeById, loading, error} = useEmployeeApi();
+    const navigate = useNavigate();
+
+    const {getEmployeeById, createEmployee, updateEmployee, loading, error} = useEmployeeApi();
 
     // Initial state for form fields
     const [formData, setFormData] = useState<Employee>({
@@ -40,10 +42,18 @@ export function EmployeeEdit() {
         setFormData(prev => ({...prev, [name]: value}));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Speichern:", formData);
-        alert("Speichern ist noch nicht implementiert (Next Ticket!)");
+
+        if (isNew) {
+            await createEmployee(formData);
+        } else if (parsedId) {
+            await updateEmployee(parsedId, formData);
+        }
+
+        if (!error) {
+            navigate('/employees');
+        }
     };
 
     return (
