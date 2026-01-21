@@ -1,45 +1,60 @@
 import './App.css'
-import {Container, Nav, Navbar} from "react-bootstrap";
-import {Link, Route, Routes} from "react-router-dom";
-import {UnsecuredFoo} from "./pages/UnsecuredFoo.tsx";
-import {SecuredBar} from "./pages/SecuredBar.tsx";
+import {Route, Routes} from "react-router-dom";
+import {Container} from "react-bootstrap";
+
+import {Navigation} from "./components/Navigation.tsx";
 import {Home} from "./pages/Home.tsx";
+import {EmployeeList} from "./pages/EmployeeList.tsx";
+import {EmployeeEdit} from "./pages/EmployeeEdit.tsx";
+import {QualificationList} from "./pages/QualificationList.tsx";
 import RequireAuth from "./auth/RequireAuth.tsx";
-import {EmployeeTable} from "./pages/EmployeeTable.tsx";
 
 function App() {
-
-
     return (
-        <Container>
-            <Navbar bg="light" expand="lg">
-                <Container>
-                    <Navbar.Brand href="#home">React-Bootstrap</Navbar.Brand>
-                    <Navbar.Toggle aria-controls="basic-navbar-nav"/>
-                    <Navbar.Collapse id="basic-navbar-nav">
-                        <Nav className="me-auto">
-                            <Nav.Link as={Link} to="/foo">Foo</Nav.Link>
-                            <Nav.Link as={Link} to="/bar">Bar</Nav.Link>
-                            <Nav.Link as={Link} to="/employees">Mitarbeiter</Nav.Link>
-                        </Nav>
-                    </Navbar.Collapse>
-                </Container>
-            </Navbar>
-            <Routes>
-                <Route path="/" element={<Home/>}/>
-                <Route path="/foo" element={<UnsecuredFoo/>}/>
-                <Route path="/bar" element={
-                    <RequireAuth>
-                        <SecuredBar/>
-                    </RequireAuth>
-                }/>
-                <Route path="/employees" element={
-                    <RequireAuth>
-                        <EmployeeTable/>
-                    </RequireAuth>
-                }/>
-            </Routes>
-        </Container>
+        <>
+            {/* Die Navigation ist immer sichtbar */}
+            <Navigation/>
+
+            <Container>
+                <Routes>
+                    {/* Öffentliche Seite */}
+                    <Route path="/" element={<Home/>}/>
+
+                    {/* Die unteren Routen sind nur mit Login erreichbar */}
+
+                    {/* 1. Mitarbeiter Übersicht */}
+                    <Route path="/employees" element={
+                        <RequireAuth>
+                            <EmployeeList/>
+                        </RequireAuth>
+                    }/>
+
+                    {/* 2. Mitarbeiter Anlegen (Neu) */}
+                    {/* WICHTIG: Diese Route MUSS vor /employees/:id definiert werden,
+                        da sonst "new" als ID-Parameter interpretiert wird */}
+                    <Route path="/employees/new" element={
+                        <RequireAuth>
+                            <EmployeeEdit/>
+                        </RequireAuth>
+                    }/>
+
+                    {/* 3. Mitarbeiter Bearbeiten (mit ID) */}
+                    <Route path="/employees/:id" element={
+                        <RequireAuth>
+                            <EmployeeEdit/>
+                        </RequireAuth>
+                    }/>
+
+                    {/* 4. Qualifikationen */}
+                    <Route path="/qualifications" element={
+                        <RequireAuth>
+                            <QualificationList/>
+                        </RequireAuth>
+                    }/>
+
+                </Routes>
+            </Container>
+        </>
     )
 }
 
