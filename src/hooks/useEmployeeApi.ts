@@ -1,5 +1,6 @@
 import {useAuth} from "react-oidc-context";
 import {useState} from "react";
+import type {Employee} from "../types";
 
 export function useEmployeeApi() {
     const auth = useAuth();
@@ -55,5 +56,94 @@ export function useEmployeeApi() {
         }
     };
 
-    return {fetchEmployees, getEmployeeById, loading, error};
+    const createEmployee = async (employee: Employee) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const headers: Record<string, string> = {
+                'Content-Type': 'application/json'
+            };
+
+            if (auth.user?.access_token) {
+                headers['Authorization'] = `Bearer ${auth.user.access_token}`;
+            }
+
+            const response = await fetch('http://localhost:8089/employees', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(employee)
+            });
+
+            if (!response.ok) {
+                throw new Error("Fehler beim Erstellen des Mitarbeiters");
+            }
+            return await response.json();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const updateEmployee = async (id: number, employee: Employee) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const headers: Record<string, string> = {
+                'Content-Type': 'application/json'
+            };
+
+            if (auth.user?.access_token) {
+                headers['Authorization'] = `Bearer ${auth.user.access_token}`;
+            }
+
+            const response = await fetch(`http://localhost:8089/employees/${id}`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify(employee)
+            });
+
+            if (!response.ok) {
+                throw new Error("Fehler beim Aktualisieren des Mitarbeiters");
+            }
+            return await response.json();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const deleteEmployee = async (id: number) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const headers: Record<string, string> = {
+                'Content-Type': 'application/json'
+            };
+
+            if (auth.user?.access_token) {
+                headers['Authorization'] = `Bearer ${auth.user.access_token}`;
+            }
+
+            const response = await fetch(`http://localhost:8089/employees/${id}`, {
+                method: 'DELETE',
+                headers
+            });
+
+            if (!response.ok) {
+                throw new Error("Fehler beim Löschen des Mitarbeiters");
+            }
+            // DELETE often returns empty body, so no .json() call if 204
+            if (response.status !== 204) {
+                return await response.json();
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return {fetchEmployees, getEmployeeById, createEmployee, updateEmployee, deleteEmployee, loading, error};
 }
