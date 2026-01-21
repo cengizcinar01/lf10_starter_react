@@ -6,7 +6,7 @@ import {Navigation} from "./components/Navigation.tsx";
 import {Home} from "./pages/Home.tsx";
 import {EmployeeList} from "./pages/EmployeeList.tsx";
 import {EmployeeEdit} from "./pages/EmployeeEdit.tsx";
-import {QualiList} from "./pages/QualiList.tsx";
+import { QualiList } from "./pages/QualiList.tsx";
 import RequireAuth from "./auth/RequireAuth.tsx";
 
 function App() {
