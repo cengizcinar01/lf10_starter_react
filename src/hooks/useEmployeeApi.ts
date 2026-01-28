@@ -32,6 +32,31 @@ export function useEmployeeApi() {
         }
     };
 
+    const addQualificationToEmployee = async (
+    employeeId: number,
+    qualificationId: number
+    ) => {
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+    };
+
+    if (auth.user?.access_token) {
+        headers['Authorization'] = `Bearer ${auth.user.access_token}`;
+    }
+
+    const response = await fetch(
+        `http://localhost:8089/employees/${employeeId}/qualifications/${qualificationId}`,
+        {
+            method: 'POST',
+            headers
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error("Skill konnte nicht zugewiesen werden");
+    }
+};
+
     const getEmployeeById = async (id: number) => {
         setLoading(true);
         setError(null);
@@ -145,5 +170,5 @@ export function useEmployeeApi() {
         }
     };
 
-    return {fetchEmployees, getEmployeeById, createEmployee, updateEmployee, deleteEmployee, loading, error};
+    return {fetchEmployees, getEmployeeById, createEmployee, updateEmployee, deleteEmployee,  addQualificationToEmployee, loading, error};
 }

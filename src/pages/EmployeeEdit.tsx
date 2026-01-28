@@ -1,19 +1,28 @@
-import {useEffect, useState} from "react";
-import {Alert, Button, Container, Form, Spinner} from "react-bootstrap";
-import {Link, useNavigate, useParams} from "react-router-dom";
-import {useEmployeeApi} from "../hooks/useEmployeeApi";
-import type {Employee} from "../types";
+import { useEffect, useState } from "react";
+import { Alert, Button, Container, Form, Spinner } from "react-bootstrap";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useEmployeeApi } from "../hooks/useEmployeeApi";
+import { useQualificationApi } from "../hooks/useQualificationApi";
+import type { Employee, Qualification } from "../types";
 
 export function EmployeeEdit() {
-    const {id} = useParams();
+    const { id } = useParams();
     const parsedId = id !== undefined ? Number(id) : undefined;
     const isNew = parsedId === undefined || Number.isNaN(parsedId);
 
     const navigate = useNavigate();
 
-    const {getEmployeeById, createEmployee, updateEmployee, loading, error} = useEmployeeApi();
+    const {
+        getEmployeeById,
+        createEmployee,
+        updateEmployee,
+        addQualificationToEmployee,
+        loading,
+        error
+    } = useEmployeeApi();
 
-    // Initial state for form fields
+    const { getAllQualifications } = useQualificationApi();
+
     const [formData, setFormData] = useState<Employee>({
         firstName: "",
         lastName: "",
@@ -24,7 +33,12 @@ export function EmployeeEdit() {
         skillSet: []
     });
 
-    // Load data if editing
+    
+
+    const [allQualifications, setAllQualifications] = useState<Qualification[]>([]);
+    const [selectedQualificationId, setSelectedQualificationId] = useState<number | "">("");
+
+    // Mitarbeiter laden (Edit)
     useEffect(() => {
         if (!isNew && parsedId) {
             const loadEmployee = async () => {
@@ -37,40 +51,84 @@ export function EmployeeEdit() {
         }
     }, [isNew, parsedId]);
 
+    // Qualifikationen laden (Dropdown)
+    useEffect(() => {
+        const loadQualifications = async () => {
+            const data = await getAllQualifications();
+            if (data) {
+                setAllQualifications(data);
+            }
+        };
+        loadQualifications();
+    }, []);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = e.target;
-        setFormData(prev => ({...prev, [name]: value}));
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleAddSkill =  async () => {
+        if (selectedQualificationId === "" || !parsedId) return;
 
-        if (isNew) {
-            await createEmployee(formData);
-        } else if (parsedId) {
-            await updateEmployee(parsedId, formData);
-        }
+        await addQualificationToEmployee(parsedId, selectedQualificationId);
 
-        if (!error) {
-            navigate('/employees');
-        }
+         const skillToAdd = allQualifications.find(
+    q => q.id === selectedQualificationId
+        );
+
+        if (!skillToAdd) return;
+
+        const alreadyExists = formData.skillSet.some(
+            s => s.id === skillToAdd.id
+        );
+
+        if (alreadyExists) return;
+
+        setFormData(prev => ({
+            ...prev,
+            skillSet: [...prev.skillSet, skillToAdd]
+        }));
+
+        setSelectedQualificationId("");
+
+         navigate("/employees", { replace: true });
     };
+
+   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (isNew) {
+        await createEmployee(formData);
+    } else if (parsedId) {
+        await updateEmployee(parsedId, formData);
+    }
+
+    if (!error) {
+        navigate("/employees");
+    }
+};
 
     return (
         <Container className="mt-4">
-            <h1 className="mb-4">{isNew ? "Neuen Mitarbeiter anlegen" : "Mitarbeiter bearbeiten"}</h1>
+            <h1 className="mb-4">
+                {isNew ? "Neuen Mitarbeiter anlegen" : "Mitarbeiter bearbeiten"}
+            </h1>
 
-            {loading && <div className="text-center my-3"><Spinner animation="border"/></div>}
+            {loading && (
+                <div className="text-center my-3">
+                    <Spinner animation="border" />
+                </div>
+            )}
+
             {error && <Alert variant="danger">{error}</Alert>}
 
             {!loading && (
                 <Form onSubmit={handleSubmit} className="shadow-sm p-4 bg-white rounded">
                     <div className="row">
                         <div className="col-md-6 mb-3">
-                            <Form.Group controlId="firstName">
+                            <Form.Group>
                                 <Form.Label>Vorname</Form.Label>
                                 <Form.Control
-                                    type="text"
                                     name="firstName"
                                     value={formData.firstName}
                                     onChange={handleChange}
@@ -78,11 +136,11 @@ export function EmployeeEdit() {
                                 />
                             </Form.Group>
                         </div>
+
                         <div className="col-md-6 mb-3">
-                            <Form.Group controlId="lastName">
+                            <Form.Group>
                                 <Form.Label>Nachname</Form.Label>
                                 <Form.Control
-                                    type="text"
                                     name="lastName"
                                     value={formData.lastName}
                                     onChange={handleChange}
@@ -94,10 +152,9 @@ export function EmployeeEdit() {
 
                     <div className="row">
                         <div className="col-md-8 mb-3">
-                            <Form.Group controlId="street">
+                            <Form.Group>
                                 <Form.Label>Straße</Form.Label>
                                 <Form.Control
-                                    type="text"
                                     name="street"
                                     value={formData.street}
                                     onChange={handleChange}
@@ -105,11 +162,11 @@ export function EmployeeEdit() {
                                 />
                             </Form.Group>
                         </div>
+
                         <div className="col-md-4 mb-3">
-                            <Form.Group controlId="postcode">
+                            <Form.Group>
                                 <Form.Label>PLZ</Form.Label>
                                 <Form.Control
-                                    type="text"
                                     name="postcode"
                                     value={formData.postcode}
                                     onChange={handleChange}
@@ -121,10 +178,9 @@ export function EmployeeEdit() {
 
                     <div className="row">
                         <div className="col-md-6 mb-3">
-                            <Form.Group controlId="city">
+                            <Form.Group>
                                 <Form.Label>Ort</Form.Label>
                                 <Form.Control
-                                    type="text"
                                     name="city"
                                     value={formData.city}
                                     onChange={handleChange}
@@ -132,11 +188,11 @@ export function EmployeeEdit() {
                                 />
                             </Form.Group>
                         </div>
+
                         <div className="col-md-6 mb-3">
-                            <Form.Group controlId="phone">
+                            <Form.Group>
                                 <Form.Label>Telefon</Form.Label>
                                 <Form.Control
-                                    type="text"
                                     name="phone"
                                     value={formData.phone}
                                     onChange={handleChange}
@@ -146,7 +202,38 @@ export function EmployeeEdit() {
                         </div>
                     </div>
 
-                    <div className="d-flex justify-content-between mt-4">
+                    {/* ===== Skills ===== */}
+                    <hr />
+                    <h5>Skills</h5>
+
+                    <ul>
+                        {formData.skillSet.map(skill => (
+                            <li key={skill.id}>{skill.skill}</li>
+                        ))}
+                        {formData.skillSet.length === 0 && (
+                            <li className="text-muted">Keine Skills zugewiesen</li>
+                        )}
+                    </ul>
+
+                    <div className="d-flex gap-2 mb-4">
+                        <Form.Select
+                            value={selectedQualificationId}
+                            onChange={e => setSelectedQualificationId(Number(e.target.value))}
+                        >
+                            <option value="">Skill auswählen</option>
+                            {allQualifications.map(q => (
+                                <option key={q.id} value={q.id}>
+                                    {q.skill}
+                                </option>
+                            ))}
+                        </Form.Select>
+
+                        <Button variant="secondary" onClick={handleAddSkill}>
+                            Hinzufügen
+                        </Button>
+                    </div>
+
+                    <div className="d-flex justify-content-between">
                         <Link to="/employees">
                             <Button variant="outline-secondary">Abbrechen</Button>
                         </Link>
