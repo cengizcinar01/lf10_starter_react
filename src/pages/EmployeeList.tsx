@@ -1,15 +1,20 @@
-import {useEffect, useState} from "react";
-import {Alert, Button, Container, Spinner, Table} from "react-bootstrap";
-import {Link} from "react-router-dom";
-import type {Employee} from "../types";
-import {useEmployeeApi} from "../hooks/useEmployeeApi";
+import { useEffect, useState } from "react";
+import { Alert, Button, Container, Spinner, Table } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import type { Employee } from "../types";
+import { useEmployeeApi } from "../hooks/useEmployeeApi";
 
 export function EmployeeList() {
-    // State für die Mitarbeiter-Liste
-    const [employees, setEmployees] = useState<Employee[]>([]);
-    const {fetchEmployees, deleteEmployee, loading, error} = useEmployeeApi(); // Destructure deleteEmployee
+    // Filter-States
+    const [searchName, setSearchName] = useState("");
+    const [searchCity, setSearchCity] = useState("");
+    const [searchSkill, setSearchSkill] = useState("");
 
-    // Beim Laden der Komponente die Daten holen
+    // State für Mitarbeiter
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const { fetchEmployees, deleteEmployee, loading, error } = useEmployeeApi();
+
+    // Daten laden
     const loadData = async () => {
         const data = await fetchEmployees();
         if (data) {
@@ -21,31 +26,76 @@ export function EmployeeList() {
         loadData();
     }, []);
 
-    // Funktion für das Löschen
+    // Filterlogik
+    const filteredEmployees = employees.filter((employee) => {
+        const nameMatch =
+            employee.firstName.toLowerCase().includes(searchName.toLowerCase()) ||
+            employee.lastName.toLowerCase().includes(searchName.toLowerCase());
+
+        const cityMatch =
+            employee.city.toLowerCase().includes(searchCity.toLowerCase());
+
+        const skillMatch =
+            searchSkill === "" ||
+            employee.skillSet?.some((skill) =>
+                skill.skill.toLowerCase().includes(searchSkill.toLowerCase())
+            );
+
+        return nameMatch && cityMatch && skillMatch;
+    });
+
+    // Löschen
     const handleDelete = async (id?: number) => {
         if (id !== undefined && confirm("Möchten Sie diesen Mitarbeiter wirklich löschen?")) {
             await deleteEmployee(id);
-            // Liste aktualisieren
             loadData();
         }
     };
 
     return (
         <Container className="mt-4">
-            {/* Kopfbereich: Titel und Neuer Mitarbeiter Button */}
-            <div className="d-flex justify-content-between align-items-center mb-4">
+            {/* Kopfbereich */}
+            <div className="d-flex justify-content-between align-items-center mb-3">
                 <h1>Mitarbeiterübersicht</h1>
                 <Link to="/employees/new">
                     <Button variant="primary">Neuer Mitarbeiter</Button>
                 </Link>
             </div>
 
-            {loading && <div className="text-center my-5"><Spinner animation="border"/></div>}
+            {/* Filterfelder */}
+            <div className="mb-3 d-flex gap-2">
+                <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Name suchen"
+                    value={searchName}
+                    onChange={(e) => setSearchName(e.target.value)}
+                />
+                <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Ort suchen"
+                    value={searchCity}
+                    onChange={(e) => setSearchCity(e.target.value)}
+                />
+                <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Qualifikation suchen"
+                    value={searchSkill}
+                    onChange={(e) => setSearchSkill(e.target.value)}
+                />
+            </div>
+
+            {loading && (
+                <div className="text-center my-5">
+                    <Spinner animation="border" />
+                </div>
+            )}
 
             {error && <Alert variant="danger">{error}</Alert>}
 
             {!loading && !error && (
-                /* Tabelle */
                 <div className="table-responsive shadow-sm p-3 mb-5 bg-white rounded">
                     <Table hover className="align-middle">
                         <thead className="table-light">
@@ -58,32 +108,39 @@ export function EmployeeList() {
                         </tr>
                         </thead>
                         <tbody>
-                        {employees.map((employee) => (
+                        {filteredEmployees.map((employee) => (
                             <tr key={employee.id}>
                                 <td>{employee.firstName}</td>
                                 <td>{employee.lastName}</td>
                                 <td>{employee.city}</td>
                                 <td>
-                                    {/* Kleine Badges für Skills anzeigen */}
-                                    {employee.skillSet && employee.skillSet.map(skill => (
-                                        <span key={skill.id} className="badge bg-light text-dark me-1 border">
+                                    {employee.skillSet?.map((skill) => (
+                                        <span
+                                            key={skill.id}
+                                            className="badge bg-light text-dark me-1 border"
+                                        >
                                                 {skill.skill}
                                             </span>
                                     ))}
                                 </td>
                                 <td className="text-end">
-                                    {/* Bearbeiten Button (Link) */}
-                                    <Link to={`/employees/${employee.id}`} className="me-2">
-                                        <Button variant="outline-secondary" size="sm">
+                                    <Link
+                                        to={`/employees/${employee.id}`}
+                                        className="me-2"
+                                    >
+                                        <Button
+                                            variant="outline-secondary"
+                                            size="sm"
+                                        >
                                             Bearbeiten
                                         </Button>
                                     </Link>
-
-                                    {/* Löschen Button */}
                                     <Button
                                         variant="outline-danger"
                                         size="sm"
-                                        onClick={() => handleDelete(employee.id)}
+                                        onClick={() =>
+                                            handleDelete(employee.id)
+                                        }
                                     >
                                         Löschen
                                     </Button>
