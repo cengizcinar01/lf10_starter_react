@@ -94,8 +94,10 @@ export function EmployeeEdit() {
     // Skill hinzufügen
     const handleAddSkill = async (skillId: number) => {
         if (!parsedId) return;
+        const skill = allQualifications.find(q => q.id === skillId);
+        if (!skill) return;
         setSkillLoading(true);
-        const result = await addSkillToEmployee(parsedId, skillId);
+        const result = await addSkillToEmployee(parsedId, skill.skill);
         setSkillLoading(false);
         if (result) {
             await loadEmployee(parsedId);
@@ -140,7 +142,7 @@ export function EmployeeEdit() {
 
             {loading && (
                 <div className="text-center my-3">
-                    <Spinner animation="border"/>
+                    <Spinner animation="border" />
                 </div>
             )}
 
@@ -242,7 +244,7 @@ export function EmployeeEdit() {
                                     <Button variant="outline-secondary" type="button">Abbrechen</Button>
                                 </Link>
                                 <Button variant="primary" type="submit" disabled={loading}>
-                                    {loading ? <><Spinner size="sm" className="me-2"/>Speichert...</> : "Speichern"}
+                                    {loading ? <><Spinner size="sm" className="me-2" />Speichert...</> : "Speichern"}
                                 </Button>
                             </div>
                         </Form>

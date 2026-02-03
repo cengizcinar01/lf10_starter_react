@@ -120,7 +120,7 @@ export function useEmployeeApi() {
   };
 
   // Skill einem Mitarbeiter zuweisen (POST /employees/:id/qualifications mit Body)
-  const addSkillToEmployee = async (employeeId: number, qualificationId: number) => {
+  const addSkillToEmployee = async (employeeId: number, skill: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -129,7 +129,7 @@ export function useEmployeeApi() {
         {
           method: 'POST',
           headers: getHeaders(),
-          body: JSON.stringify({id: qualificationId})
+          body: JSON.stringify({skill})
         }
       );
       if (!response.ok) {
