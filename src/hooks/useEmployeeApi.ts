@@ -1,6 +1,7 @@
 import {useState} from "react";
 import {useAuth} from "react-oidc-context";
 
+import {API_BASE_URL} from "../config";
 import type {Employee} from "../types";
 
 export function useEmployeeApi() {
@@ -9,23 +10,30 @@ export function useEmployeeApi() {
   const [error, setError] = useState<string | null>(null);
 
   const getHeaders = () => {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
-    };
+    const headers: Record<string, string> = {'Content-Type': 'application/json'};
     if (auth.user?.access_token) {
       headers['Authorization'] = `Bearer ${auth.user.access_token}`;
     }
     return headers;
   };
 
-  const fetchEmployees = async () => {
+  // Generische API-Funktion um Duplikation zu vermeiden
+  const apiCall = async <T>(
+    url: string,
+    options: RequestInit = {},
+    errorMsg: string
+  ): Promise<T | null> => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:8089/employees', {headers: getHeaders()});
+      const response = await fetch(url, {headers: getHeaders(), ...options});
       if (!response.ok) {
-        setError("Fehler beim Laden der Mitarbeiter");
+        setError(errorMsg);
         return null;
+      }
+      // Bei DELETE kommt oft kein Body zurück
+      if (response.status === 204 || options.method === 'DELETE') {
+        return true as T;
       }
       return await response.json();
     } catch (err) {
@@ -36,139 +44,39 @@ export function useEmployeeApi() {
     }
   };
 
-  const getEmployeeById = async (id: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`http://localhost:8089/employees/${id}`, {headers: getHeaders()});
-      if (!response.ok) {
-        setError("Fehler beim Laden des Mitarbeiters");
-        return null;
-      }
-      return await response.json();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchEmployees = () =>
+    apiCall<Employee[]>(`${API_BASE_URL}/employees`, {}, "Fehler beim Laden");
 
-  const createEmployee = async (employee: Employee) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('http://localhost:8089/employees', {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify(employee)
-      });
-      if (!response.ok) {
-        setError("Fehler beim Erstellen des Mitarbeiters");
-        return null;
-      }
-      return await response.json();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const getEmployeeById = (id: number) =>
+    apiCall<Employee>(`${API_BASE_URL}/employees/${id}`, {}, "Fehler beim Laden");
 
-  const updateEmployee = async (id: number, employee: Employee) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`http://localhost:8089/employees/${id}`, {
-        method: 'PUT',
-        headers: getHeaders(),
-        body: JSON.stringify(employee)
-      });
-      if (!response.ok) {
-        setError("Fehler beim Aktualisieren des Mitarbeiters");
-        return null;
-      }
-      return await response.json();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const createEmployee = (employee: Employee) =>
+    apiCall<Employee>(`${API_BASE_URL}/employees`, {
+      method: 'POST',
+      body: JSON.stringify(employee)
+    }, "Fehler beim Erstellen");
 
-  const deleteEmployee = async (id: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`http://localhost:8089/employees/${id}`, {
-        method: 'DELETE',
-        headers: getHeaders()
-      });
-      if (!response.ok) {
-        setError("Fehler beim Löschen des Mitarbeiters");
-        return false;
-      }
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const updateEmployee = (id: number, employee: Employee) =>
+    apiCall<Employee>(`${API_BASE_URL}/employees/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(employee)
+    }, "Fehler beim Aktualisieren");
 
-  // Skill einem Mitarbeiter zuweisen (POST /employees/:id/qualifications mit Body)
-  const addSkillToEmployee = async (employeeId: number, skill: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(
-        `http://localhost:8089/employees/${employeeId}/qualifications`,
-        {
-          method: 'POST',
-          headers: getHeaders(),
-          body: JSON.stringify({skill})
-        }
-      );
-      if (!response.ok) {
-        setError("Fehler beim Hinzufügen der Qualifikation");
-        return null;
-      }
-      return await response.json();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const deleteEmployee = (id: number) =>
+    apiCall<boolean>(`${API_BASE_URL}/employees/${id}`, {
+      method: 'DELETE'
+    }, "Fehler beim Löschen");
 
-  // Skill von einem Mitarbeiter entfernen
-  const removeSkillFromEmployee = async (employeeId: number, qualificationId: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(
-        `http://localhost:8089/employees/${employeeId}/qualifications/${qualificationId}`,
-        {
-          method: 'DELETE',
-          headers: getHeaders()
-        }
-      );
-      if (!response.ok) {
-        setError("Fehler beim Entfernen der Qualifikation");
-        return false;
-      }
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const addSkillToEmployee = (employeeId: number, skill: string) =>
+    apiCall<Employee>(`${API_BASE_URL}/employees/${employeeId}/qualifications`, {
+      method: 'POST',
+      body: JSON.stringify({skill})
+    }, "Fehler beim Hinzufügen");
+
+  const removeSkillFromEmployee = (employeeId: number, qualificationId: number) =>
+    apiCall<boolean>(`${API_BASE_URL}/employees/${employeeId}/qualifications/${qualificationId}`, {
+      method: 'DELETE'
+    }, "Fehler beim Entfernen");
 
   return {
     fetchEmployees,

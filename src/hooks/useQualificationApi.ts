@@ -1,20 +1,16 @@
 import {useCallback, useState} from "react";
 import {useAuth} from "react-oidc-context";
 
+import {API_BASE_URL} from "../config";
 import type {Qualification} from "../types";
 
-// Hook für alle API-Calls zu /qualifications
 export function useQualificationApi() {
   const auth = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const baseUrl = 'http://localhost:8089/qualifications';
-
   const getHeaders = useCallback(() => {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
-    };
+    const headers: Record<string, string> = {'Content-Type': 'application/json'};
     if (auth.user?.access_token) {
       headers['Authorization'] = `Bearer ${auth.user.access_token}`;
     }
@@ -25,15 +21,14 @@ export function useQualificationApi() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(baseUrl, {headers: getHeaders()});
+      const response = await fetch(`${API_BASE_URL}/qualifications`, {headers: getHeaders()});
       if (!response.ok) {
-        setError("Fehler beim Laden der Qualifikationen");
+        setError("Fehler beim Laden");
         return [];
       }
       return await response.json();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unbekannter Fehler';
-      setError(msg);
+      setError(err instanceof Error ? err.message : 'Fehler');
       return [];
     } finally {
       setLoading(false);
@@ -44,19 +39,18 @@ export function useQualificationApi() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(baseUrl, {
+      const response = await fetch(`${API_BASE_URL}/qualifications`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify({skill})
       });
       if (!response.ok) {
-        setError("Fehler beim Erstellen der Qualifikation");
+        setError("Fehler beim Erstellen");
         return null;
       }
       return await response.json();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unbekannter Fehler';
-      setError(msg);
+      setError(err instanceof Error ? err.message : 'Fehler');
       return null;
     } finally {
       setLoading(false);
@@ -67,18 +61,17 @@ export function useQualificationApi() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${baseUrl}/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/qualifications/${id}`, {
         method: 'DELETE',
         headers: getHeaders()
       });
       if (!response.ok) {
-        setError("Fehler beim Löschen der Qualifikation");
+        setError("Fehler beim Löschen");
         return false;
       }
       return true;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unbekannter Fehler';
-      setError(msg);
+      setError(err instanceof Error ? err.message : 'Fehler');
       return false;
     } finally {
       setLoading(false);
