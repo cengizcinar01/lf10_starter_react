@@ -8,6 +8,7 @@ interface EmployeeSkillManagerProps {
     availableSkills: Qualification[];
     onAddSkill: (skillId: number) => void;
     onRemoveSkill: (skillId: number) => void;
+    onCreateSkill?: (skillName: string) => void; // Optional: Neue Quali erstellen
     loading?: boolean;
 }
 
@@ -17,9 +18,11 @@ export function EmployeeSkillManager({
                                          availableSkills,
                                          onAddSkill,
                                          onRemoveSkill,
+                                         onCreateSkill,
                                          loading = false,
                                      }: EmployeeSkillManagerProps) {
     const [selectedSkillId, setSelectedSkillId] = useState<string>("");
+    const [newSkillName, setNewSkillName] = useState<string>("");
 
     // Nur Skills zeigen die noch nicht zugewiesen sind
     const selectableSkills = availableSkills.filter(
@@ -33,10 +36,18 @@ export function EmployeeSkillManager({
         }
     };
 
+    const handleCreate = () => {
+        if (newSkillName.trim() && onCreateSkill) {
+            onCreateSkill(newSkillName.trim());
+            setNewSkillName("");
+        }
+    };
+
     return (
         <div className="border rounded p-3 bg-light">
             <h5 className="mb-3">Qualifikationen</h5>
 
+            {/* Zugewiesene Skills als Badges */}
             <div className="mb-3">
                 {currentSkills.length === 0 ? (
                     <p className="text-muted mb-0">Noch keine Skills zugewiesen.</p>
@@ -65,8 +76,9 @@ export function EmployeeSkillManager({
                 )}
             </div>
 
-            {selectableSkills.length > 0 ? (
-                <InputGroup>
+            {/* Vorhandenen Skill auswählen */}
+            {selectableSkills.length > 0 && (
+                <InputGroup className="mb-3">
                     <Form.Select
                         value={selectedSkillId}
                         onChange={(e) => setSelectedSkillId(e.target.value)}
@@ -87,7 +99,29 @@ export function EmployeeSkillManager({
                         {loading ? <Spinner size="sm"/> : "Hinzufügen"}
                     </Button>
                 </InputGroup>
-            ) : (
+            )}
+
+            {/* Neuen Skill erstellen (nur wenn onCreateSkill vorhanden) */}
+            {onCreateSkill && (
+                <InputGroup>
+                    <Form.Control
+                        type="text"
+                        placeholder="Neuen Skill erstellen..."
+                        value={newSkillName}
+                        onChange={(e) => setNewSkillName(e.target.value)}
+                        disabled={loading}
+                    />
+                    <Button
+                        variant="outline-primary"
+                        onClick={handleCreate}
+                        disabled={!newSkillName.trim() || loading}
+                    >
+                        Erstellen
+                    </Button>
+                </InputGroup>
+            )}
+
+            {selectableSkills.length === 0 && !onCreateSkill && (
                 <p className="text-muted small mb-0">
                     {availableSkills.length === 0
                         ? "Keine Skills im System."
@@ -97,3 +131,4 @@ export function EmployeeSkillManager({
         </div>
     );
 }
+
