@@ -17,66 +17,53 @@ export function useQualificationApi() {
     return headers;
   }, [auth.user?.access_token]);
 
-  const fetchQualifications = useCallback(async (): Promise<Qualification[]> => {
+  // Generische API-Funktion um Duplikation zu vermeiden
+  const apiCall = useCallback(async <T>(
+    url: string,
+    options: RequestInit = {},
+    errorMsg: string,
+    defaultValue: T
+  ): Promise<T> => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/qualifications`, {headers: getHeaders()});
+      const response = await fetch(url, {headers: getHeaders(), ...options});
       if (!response.ok) {
-        setError("Fehler beim Laden");
-        return [];
+        setError(errorMsg);
+        return defaultValue;
+      }
+      // Bei DELETE kommt oft kein Body zurück
+      if (response.status === 204 || options.method === 'DELETE') {
+        return true as T;
       }
       return await response.json();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler');
-      return [];
+      setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
+      return defaultValue;
     } finally {
       setLoading(false);
     }
   }, [getHeaders]);
 
-  const createQualification = useCallback(async (skill: string): Promise<Qualification | null> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`${API_BASE_URL}/qualifications`, {
+  // Alle Qualifikationen laden
+  const fetchQualifications = useCallback(() =>
+      apiCall<Qualification[]>(`${API_BASE_URL}/qualifications`, {}, "Fehler beim Laden", []),
+    [apiCall]);
+
+  // Neue Qualifikation erstellen
+  const createQualification = useCallback((skill: string) =>
+      apiCall<Qualification | null>(`${API_BASE_URL}/qualifications`, {
         method: 'POST',
-        headers: getHeaders(),
         body: JSON.stringify({skill})
-      });
-      if (!response.ok) {
-        setError("Fehler beim Erstellen");
-        return null;
-      }
-      return await response.json();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [getHeaders]);
+      }, "Fehler beim Erstellen", null),
+    [apiCall]);
 
-  const deleteQualification = useCallback(async (id: number): Promise<boolean> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`${API_BASE_URL}/qualifications/${id}`, {
-        method: 'DELETE',
-        headers: getHeaders()
-      });
-      if (!response.ok) {
-        setError("Fehler beim Löschen");
-        return false;
-      }
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, [getHeaders]);
+  // Qualifikation löschen
+  const deleteQualification = useCallback((id: number) =>
+      apiCall<boolean>(`${API_BASE_URL}/qualifications/${id}`, {
+        method: 'DELETE'
+      }, "Fehler beim Löschen", false),
+    [apiCall]);
 
   return {fetchQualifications, createQualification, deleteQualification, loading, error};
 }
