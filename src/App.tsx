@@ -1,13 +1,13 @@
 import './App.css'
-import {Route, Routes} from "react-router-dom";
 import {Container} from "react-bootstrap";
+import {Route, Routes} from "react-router-dom";
 
-import {Navigation} from "./components/Navigation.tsx";
-import {Home} from "./pages/Home.tsx";
-import {EmployeeList} from "./pages/EmployeeList.tsx";
-import {EmployeeEdit} from "./pages/EmployeeEdit.tsx";
-import {QualificationList} from "./pages/QualificationList.tsx";
 import RequireAuth from "./auth/RequireAuth.tsx";
+import {Navigation} from "./components/Navigation.tsx";
+import {EmployeeEdit} from "./pages/EmployeeEdit.tsx";
+import {EmployeeList} from "./pages/EmployeeList.tsx";
+import {Home} from "./pages/Home.tsx";
+import {QualificationList} from "./pages/QualificationList.tsx";
 
 function App() {
     return (
@@ -22,14 +22,14 @@ function App() {
 
                     {/* Die unteren Routen sind nur mit Login erreichbar */}
 
-                    {/* 1. Mitarbeiter Übersicht */}
+                    {/* Mitarbeiter Übersicht */}
                     <Route path="/employees" element={
                         <RequireAuth>
                             <EmployeeList/>
                         </RequireAuth>
                     }/>
 
-                    {/* 2. Mitarbeiter Anlegen (Neu) */}
+                    {/* Mitarbeiter Anlegen */}
                     {/* WICHTIG: Diese Route MUSS vor /employees/:id definiert werden,
                         da sonst "new" als ID-Parameter interpretiert wird */}
                     <Route path="/employees/new" element={
@@ -38,14 +38,14 @@ function App() {
                         </RequireAuth>
                     }/>
 
-                    {/* 3. Mitarbeiter Bearbeiten (mit ID) */}
+                    {/* Mitarbeiter Bearbeiten */}
                     <Route path="/employees/:id" element={
                         <RequireAuth>
                             <EmployeeEdit/>
                         </RequireAuth>
                     }/>
 
-                    {/* 4. Qualifikationen */}
+                    {/* Qualifikationen */}
                     <Route path="/qualifications" element={
                         <RequireAuth>
                             <QualificationList/>

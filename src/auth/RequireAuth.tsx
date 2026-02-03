@@ -1,15 +1,16 @@
-import {useAuth} from "react-oidc-context";
 import type {JSX} from "react";
 import {useEffect} from "react";
+import {useAuth} from "react-oidc-context";
 
 export default function RequireAuth({children}: { children: JSX.Element }) {
     const auth = useAuth();
 
+    // Wenn nicht eingeloggt -> automatisch zum SSO weiterleiten
     useEffect(() => {
         if (!auth.isLoading && !auth.isAuthenticated) {
             auth.signinRedirect();
         }
-    }, [auth.isLoading, auth.isAuthenticated]);
+    }, [auth]);
 
     if (auth.isLoading) {
         return <p>Lädt...</p>;
