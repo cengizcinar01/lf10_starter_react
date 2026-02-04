@@ -56,20 +56,6 @@ export function EmployeeList() {
         return nameMatch && cityMatch && skillMatch;
     });
 
-    const handleSalaryChange = (employeeId: number, value: string) => {
-        const updatedSalaries = {
-            ...salaries,
-            [employeeId]: value,
-        };
-
-        setSalaries(updatedSalaries);
-        localStorage.setItem(
-            "employeeSalaries",
-            JSON.stringify(updatedSalaries)
-        );
-    };
-
-
     // Löschen
     const handleDelete = async (id?: number) => {
         if (id !== undefined && confirm("Möchten Sie diesen Mitarbeiter wirklich löschen?")) {
@@ -151,16 +137,11 @@ export function EmployeeList() {
                                     ))}
                                 </td>
                                 <td>
-                                    <input
-                                        type="number"
-                                        className="form-control"
-                                        placeholder="Gehalt"
-                                        value={salaries[employee.id ?? 0] || ""}
-                                        onChange={(e) =>
-                                            handleSalaryChange(employee.id!, e.target.value)
-                                        }
-                                    />
+                                    {salaries[employee.id ?? 0]
+                                        ? `${Number(salaries[employee.id ?? 0]).toLocaleString("de-DE")} €`
+                                        : "—"}
                                 </td>
+
                                 <td className="text-end">
                                     <Link
                                         to={`/employees/${employee.id}`}
