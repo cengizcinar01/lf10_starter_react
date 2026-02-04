@@ -18,6 +18,8 @@ export function Navigation() {
                             <>
                                 <Nav.Link as={Link} to="/employees">Mitarbeiter</Nav.Link>
                                 <Nav.Link as={Link} to="/qualifications">Qualifikationen</Nav.Link>
+                                {/* Link zur Projektverwaltung */}
+                                <Nav.Link as={Link} to="/projects">Projekte</Nav.Link>
                             </>
                         )}
                     </Nav>

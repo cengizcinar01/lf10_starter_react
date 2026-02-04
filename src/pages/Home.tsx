@@ -6,12 +6,15 @@ import {DashboardCard} from "../components/DashboardCard";
 import {QuickActionsCard} from "../components/QuickActionsCard";
 import {useEmployeeApi} from "../hooks/useEmployeeApi";
 import {useQualificationApi} from "../hooks/useQualificationApi";
+import {useProjectApi} from "../hooks/useProjectApi";
 
 // Startseite mit Dashboard-Kacheln
 export function Home() {
     const auth = useAuth();
     const {fetchEmployees} = useEmployeeApi();
     const {fetchQualifications} = useQualificationApi();
+    const {projects} = useProjectApi();
+
 
     const [employeeCount, setEmployeeCount] = useState<number | null>(null);
     const [qualificationCount, setQualificationCount] = useState<number | null>(null);
@@ -37,13 +40,17 @@ export function Home() {
         }
     }, [fetchEmployees, fetchQualifications]);
 
+    // Wert für Projekte
+   const projectCount = projects.length;
+
     useEffect(() => {
         if (auth.isAuthenticated) loadKPIs();
     }, [auth.isAuthenticated, loadKPIs]);
 
-    const quickActions = [
+   const quickActions = [
         {to: "/employees/new", label: "+ Neuer Mitarbeiter", variant: "primary"},
-        {to: "/qualifications", label: "Qualifikationen pflegen", variant: "outline-secondary"}
+        {to: "/qualifications", label: "Qualifikationen pflegen", variant: "outline-secondary"},
+        {to: "/projects", label: "Projekte verwalten", variant: "outline-secondary"}
     ];
 
     return (
@@ -80,6 +87,10 @@ export function Home() {
                             <Col md={6} lg={4}>
                                 <DashboardCard title="Qualifikationen" count={qualificationCount}
                                                linkTo="/qualifications" linkText="Verwalten" variant="success"/>
+                            </Col>
+                             <Col md={6} lg={4}>
+                                <DashboardCard title="Projekte" count={projectCount}
+                                               linkTo="/projects" linkText="Verwalten" variant="success"/>
                             </Col>
                             <Col md={12} lg={4}>
                                 <QuickActionsCard actions={quickActions}/>

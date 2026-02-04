@@ -9,6 +9,7 @@ import {EmployeeEdit} from "./pages/EmployeeEdit.tsx";
 import {EmployeeList} from "./pages/EmployeeList.tsx";
 import {Home} from "./pages/Home.tsx";
 import {QualificationList} from "./pages/QualificationList.tsx";
+import { ProjectList } from './pages/ProjectList.tsx';
 
 function App() {
     return (
@@ -55,6 +56,14 @@ function App() {
                             <QualificationList/>
                         </RequireAuth>
                     }/>
+
+                    {/* Projekte Übersicht */}
+                    <Route path="/projects" element={
+                        <RequireAuth>
+                            <ProjectList/>
+                        </RequireAuth>
+                    }/>
+                
 
                 </Routes>
             </Container>

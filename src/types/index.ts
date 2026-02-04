@@ -16,3 +16,10 @@ export interface Employee {
   phone: string;
   skillSet: Qualification[]; // Eine Liste von Qualification-Objekten
 }
+
+// Interface für Projekte
+export interface Project {
+  id: number;
+  name: string;
+  description: string;
+}
