@@ -14,6 +14,10 @@ export function EmployeeList() {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const { fetchEmployees, deleteEmployee, loading, error } = useEmployeeApi();
 
+    //Gehälter-State
+    const [salaries, setSalaries] = useState<Record<number, string>>({});
+
+
     // Daten laden
     const loadData = async () => {
         const data = await fetchEmployees();
@@ -25,6 +29,14 @@ export function EmployeeList() {
     useEffect(() => {
         loadData();
     }, []);
+
+    useEffect(() => {
+        const storedSalaries = localStorage.getItem("employeeSalaries");
+        if (storedSalaries) {
+            setSalaries(JSON.parse(storedSalaries));
+        }
+    }, []);
+
 
     // Filterlogik
     const filteredEmployees = employees.filter((employee) => {
@@ -43,6 +55,20 @@ export function EmployeeList() {
 
         return nameMatch && cityMatch && skillMatch;
     });
+
+    const handleSalaryChange = (employeeId: number, value: string) => {
+        const updatedSalaries = {
+            ...salaries,
+            [employeeId]: value,
+        };
+
+        setSalaries(updatedSalaries);
+        localStorage.setItem(
+            "employeeSalaries",
+            JSON.stringify(updatedSalaries)
+        );
+    };
+
 
     // Löschen
     const handleDelete = async (id?: number) => {
@@ -104,6 +130,7 @@ export function EmployeeList() {
                             <th>Nachname</th>
                             <th>Ort</th>
                             <th>Qualifikationen</th>
+                            <th>Gehalt (€)</th>
                             <th className="text-end">Aktionen</th>
                         </tr>
                         </thead>
@@ -122,6 +149,17 @@ export function EmployeeList() {
                                                 {skill.skill}
                                             </span>
                                     ))}
+                                </td>
+                                <td>
+                                    <input
+                                        type="number"
+                                        className="form-control"
+                                        placeholder="Gehalt"
+                                        value={salaries[employee.id ?? 0] || ""}
+                                        onChange={(e) =>
+                                            handleSalaryChange(employee.id!, e.target.value)
+                                        }
+                                    />
                                 </td>
                                 <td className="text-end">
                                     <Link
